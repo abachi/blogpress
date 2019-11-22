@@ -1,0 +1,20 @@
+<% include ../partials/header %>
+
+<div class="w-1/2 mx-auto">
+    <h1 class="text-center text-lg p-3">New Post</h1>
+    <form action="/post/create" method="POST">
+        <div class="w-1/2 flex flex-col">
+            <label class="my-2" for="title">Title</label>
+            <input class="border rounded px-2 py-1" type="text" name="title" id="title">
+        </div>
+        <div class="w-1/2 flex flex-col">
+            <label class="my-2" for="text">Text</label>
+            <textarea class="border rounded px-2 py-1" name="text" id="text" cols="30" rows="10"></textarea>
+        </div>
+        <input class="rounded bg-blue-500 text-white px-2 py-1 my-3" type="submit" value="Publish"/>
+
+    </form>
+</div>
+<% include ../partials/footer %>
+
+
