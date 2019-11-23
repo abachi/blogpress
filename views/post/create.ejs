@@ -2,6 +2,15 @@
 
 <div class="w-1/2 mx-auto">
     <h1 class="text-center text-lg p-3">New Post</h1>
+    
+    <% if(errors){ %>
+        <ul>
+            <% errors.forEach((error) => { %>
+                <li class="text-red-500"><span class="font-bold"><%= error.param %>:</span> <%= error.msg %></li>
+            <% }) %>
+        </ul>
+    <% } %>
+
     <form action="/post/create" method="POST">
         <div class="w-1/2 flex flex-col">
             <label class="my-2" for="title">Title</label>

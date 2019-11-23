@@ -4,17 +4,17 @@
 <% posts.forEach(function(post){ %>
     <div class="my-3 shadow-lg p-3 rounded">
         <h3><a href="/post/show/<%= post._id %>"><%= post.title %></a></h3>
-        <span class="text-gray-400"> published at <%= post.created_at %></span>
+        <span class="text-gray-400"><%= lang('published_at') %> <%= post.created_at %></span>
         <p class="mt-4 text-gray-700"><%= post.text %></p>
         
         <% if(currentUser && currentUser.id === post.user_id){ %>
         <ul class="flex my-2">
-            <li class="mx-3"><a class="text-green-500" href="/post/edit/<%= post._id %>">Edit</a></li>
-            <li class="mx-3"><a class="text-grey-500" href="/post/show/<%= post._id %>">Read</a></li>
+            <li class="mx-3"><a class="text-green-500" href="/post/edit/<%= post._id %>"><%= lang('edit') %></a></li>
+            <li class="mx-3"><a class="text-grey-500" href="/post/show/<%= post._id %>"><%= lang('read') %></a></li>
 
             <li class="mx-3">
                 <form action="/post/delete/<%= post.id %>/?_method=DELETE" method="POST">
-                    <input class="text-red-500" type="submit" value="Delete">
+                    <input class="text-red-500" type="submit" value="<%= lang('delete') %>">
                 </form>
             </li>
         </ul>

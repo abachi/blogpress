@@ -1,16 +1,16 @@
 <% include ../partials/header %>
     <div class="w-1/2 mx-auto my-4">
-        <h1 class="text-center text-lg p-3">Login</h1>
+        <h1 class="text-center text-lg p-3"><%= lang('login') %></h1>
         <form action="/login" method="POST">
             <div class="w-1/2 flex flex-col">
-                <label class="my-2" for="username">username</label>
+                <label class="my-2" for="username"><%= lang('username') %></label>
                 <input class="border rounded" type="text" name="username" id="username">
             </div>
             <div class="w-1/2 flex flex-col">
-                <label class="my-2" for="username">Password</label>
+                <label class="my-2" for="username"><%= lang('password') %></label>
                 <input class="border rounded" type="password" name="password" id="password">
             </div>
-            <input class="rounded bg-blue-500 text-white px-2 py-1 my-3" type="submit" name="login" id="login">
+            <input class="rounded bg-blue-500 text-white px-2 py-1 my-3" type="submit" name="login" id="login" value="<%= lang('login') %>">
         </form>
     </div>
 <% include ../partials/footer %>

@@ -1,17 +1,24 @@
 <% include ../partials/header %>
 
 <div class="w-1/2 mx-auto">
-    <h1 class="text-center text-lg p-3">Edit Post</h1>
+    <h1 class="text-center text-lg p-3"><%= lang('edit-post')%></h1>
+    <% if(errors){ %>
+        <ul>
+            <% errors.forEach((error) => { %>
+                <li class="text-red-500"><span class="font-bold"><%= error.param %>:</span> <%= error.msg %></li>
+            <% }) %>
+        </ul>
+    <% } %>
     <form action="/post/edit/<%= post.id %>?_method=PUT" method="POST">
         <div class="w-1/2 flex flex-col">
-            <label class="my-2" for="title">Title</label>
+            <label class="my-2" for="title"><%= lang('title') %></label>
             <input class="border rounded px-2 py-1" type="text" name="data[title]" id="title" value="<%= post.title %>">
         </div>
         <div class="w-1/2 flex flex-col">
-            <label class="my-2" for="text">Text</label>
+            <label class="my-2" for="text"><%= lang('text') %></label>
             <textarea class="border rounded px-2 py-1" name="data[text]" id="text" cols="30" rows="10"><%= post.text %></textarea>
         </div>
-        <input class="rounded bg-green-500 text-white px-2 py-1 my-3" type="submit" value="Update"/>
+        <input class="rounded bg-green-500 text-white px-2 py-1 my-3" type="submit" value="<%= lang('update') %>"/>
 
     </form>
 </div>

@@ -6,6 +6,14 @@ const expressSession = require('express-session')({
     resave: false,
     saveUninitialized: false
 });
+
+// refactor to better implimentation and build a package 
+const Lang = require('../helpers/express-multilang');
+let lang = new Lang();
+lang.config.def = 'fr';
+lang.config.messages = require('../lang/messages');
+
+const { check, validationResult } = require('express-validator');
 let passport = require('passport');
 let localStrategy = require('passport-local');
 let passportLocalMongoose = require('passport-local-mongoose');
@@ -43,10 +51,14 @@ app.use(passport.session());
 
 app.use((req, res, next) => {
     res.locals.currentUser = req.user;
-    // console.log('req.user', req.user);
+    if(res.locals.errors === undefined)
+        res.locals.errors = [];
+    
     next();
 });
-
+app.locals.lang = (key) => {
+    return lang.translate(key);    
+};
 
 // database config 
 mongoose.connect('mongodb://localhost/blogex', {
@@ -74,11 +86,11 @@ app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/');
 });
-app.post('/register', (req, res) => {
+app.post('/register',(req, res) => {
     User.register(new User({ username: req.body.username }), req.body.password, (err, user) => {
         if(err){
             console.log('Error: ', err);
-            return res.render('register');
+            return res.render('auth/register');
         }
         passport.authenticate('local')(req, res, () => res.redirect('/'));
     });
@@ -95,16 +107,23 @@ app.post('/login', passport.authenticate("local", {
 app.get('/post/create', authMiddleware, (req, res) => {
     res.render('post/create');
 });
-
-const postValidation = (req, res, next) => {
-    
+ 
+const articleRules = (req, res, next) => {
+    return [
+        check('title', lang.translate('invalid-title-messag')).isLength({ min: 4 }),
+        check('text', 'Text should be at least 10 chars.').isLength({ min: 10 }),
+    ];
 };
 
-app.post('/post/create', [authMiddleware], (req, res, next) => {
+
+app.post('/post/create', [authMiddleware, articleRules()], (req, res, next) => {
     
-    // input validation
+    // how we hide this DRY
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.render('post/create', { errors: errors.array() });
+    }
     
-    // store the post in database
     Post.create({
         title: req.body.title,
         text: req.body.text,
@@ -137,7 +156,14 @@ app.get('/post/edit/:id', (req, res) => {
         res.render('post/edit', { post: post });
     });
 });
-app.put('/post/edit/:id', (req, res) => {
+app.put('/post/edit/:id',[authMiddleware, articleRules()], (req, res) => {
+    
+    // how we hide this ? DRY
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.redirect('back');
+    }
+
     Post.findByIdAndUpdate(req.params.id, req.body.data, (err, post) => {
         if(err || !post){
             return res.render('404');
@@ -146,7 +172,7 @@ app.put('/post/edit/:id', (req, res) => {
 
     });
 });
-app.delete('/post/delete/:id', (req, res) => {
+app.delete('/post/delete/:id', authMiddleware, (req, res) => {
     Post.findByIdAndRemove(req.params.id, (err, post) => {
         if(err){
             return res.render('404');
@@ -156,5 +182,12 @@ app.delete('/post/delete/:id', (req, res) => {
     });
 });
 
+
+app.post('/lang', (req, res, next) => {
+    if(req.body.lang){
+        lang.config.def = req.body.lang;
+    }
+    res.redirect('back');
+});
 
 module.exports = app;
