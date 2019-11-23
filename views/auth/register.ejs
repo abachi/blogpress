@@ -1,6 +1,11 @@
 <% include ../partials/header %>
 <div class="w-1/2 mx-auto my-4">
-    <h1 class="text-center">Regiter</h1>
+    <h1 class="text-center"><%= lang('register') %></h1>
+    <% if(errors){ %>
+        <ul>
+            <li class="text-red-500"><%= errors %></li>
+        </ul>
+    <% } %>
     <form action="/register" method="POST">
         <div class="w-1/2 flex flex-col">
             <label class="my-2" for="username"><%= lang('username') %></label>

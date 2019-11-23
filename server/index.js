@@ -13,7 +13,7 @@ let lang = new Lang();
 lang.config.def = 'fr';
 lang.config.messages = require('../lang/messages');
 
-const { check, validationResult } = require('express-validator');
+const { check, body, validationResult } = require('express-validator');
 let passport = require('passport');
 let localStrategy = require('passport-local');
 let passportLocalMongoose = require('passport-local-mongoose');
@@ -86,11 +86,12 @@ app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/');
 });
-app.post('/register',(req, res) => {
+
+app.post('/register', (req, res) => {
     User.register(new User({ username: req.body.username }), req.body.password, (err, user) => {
         if(err){
             console.log('Error: ', err);
-            return res.render('auth/register');
+            return res.render('auth/register', { errors: err });
         }
         passport.authenticate('local')(req, res, () => res.redirect('/'));
     });
