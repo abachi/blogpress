@@ -7,7 +7,7 @@
   "author": "Nasser Abachi",
   "scripts": {
     "start": "nodemon app.js",
-    "test": "jest --watchAll"
+    "test": "NODE_ENV=testing nodemon --exec \"mocha -R min test/* --watch\""
   },
   "license": "MIT",
   "dependencies": {
@@ -23,7 +23,7 @@
     "passport-local-mongoose": "^5.0.1"
   },
   "devDependencies": {
-    "jest": "^24.9.0",
+    "mocha": "^6.2.2",
     "nodemon": "^1.19.4",
     "supertest": "^4.0.2"
   }

@@ -6,4 +6,4 @@ let schema = new mongoose.Schema({
 });
 schema.plugin(plm);
 
-module.exports = mongoose.model('User', schema);
+module.exports =  mongoose.models.User || mongoose.model('User', schema);

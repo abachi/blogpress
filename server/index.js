@@ -7,7 +7,7 @@ const expressSession = require('express-session')({
     saveUninitialized: false
 });
 
-// refactor to better implimentation and build a package 
+// refactor to better implimentation
 const Lang = require('../helpers/express-multilang');
 let lang = new Lang();
 lang.config.def = 'fr';
@@ -26,6 +26,7 @@ let Post = require('../models/Post');
 // middlewares 
 const alreadyAuthenticated = (req, res, next) => {
     if(req.isAuthenticated()){
+        console.log('The user already authenticated');
         return res.redirect('/');
     }
     next();
@@ -37,10 +38,10 @@ const authMiddleware = (req, res, next) => {
     res.redirect('/login');
 };
 // initialization & configuration
-// DBSeeder(); // reset the database 
 passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
 const app = express();
 app.use(methodOverride('_method'));
 app.set('view engine', 'ejs');
@@ -53,21 +54,20 @@ app.use((req, res, next) => {
     res.locals.currentUser = req.user;
     if(res.locals.errors === undefined)
         res.locals.errors = [];
-    
     next();
 });
+
 app.locals.lang = (key) => {
     return lang.translate(key);    
 };
-
 // database config 
-mongoose.connect('mongodb://localhost/blogex', {
+const dbUrl = (process.env.NODE_ENV === 'testing') ? 'mongodb://localhost/testing-blogex' : 'mongodb://localhost/blogex';
+mongoose.connect(dbUrl, {
     useCreateIndex: true,
     useNewUrlParser: true, 
     useUnifiedTopology: true,
     useFindAndModify: false
 });
-
 
 // Routes
 app.get('/', (req, res) => {
@@ -101,8 +101,8 @@ app.get('/login', alreadyAuthenticated, (req, res) => {
 });
 app.post('/login', passport.authenticate("local", {
         successRedirect: '/',
-        failureRedirect: '/login'
-    }), (req, res ) => {});
+        failureRedirect: '/login',
+    }));
 
 // post routes
 app.get('/post/create', authMiddleware, (req, res) => {
@@ -133,7 +133,7 @@ app.post('/post/create', [authMiddleware, articleRules()], (req, res, next) => {
     }, (err, post) => {
         if(err) {
             console.log('Error: ', err);
-            return;
+            return res.send({error: err});
         }
         console.log('Post created.');
         res.redirect('/');

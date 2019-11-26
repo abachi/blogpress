@@ -8,4 +8,4 @@ let schema = new mongoose.Schema({
 });
 
 
-module.exports = mongoose.model('Post', schema);
+module.exports = mongoose.models.Post || mongoose.model('Post', schema);

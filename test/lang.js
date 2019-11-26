@@ -1,4 +1,4 @@
-
+const assert = require('assert');
 let Lang = require('../helpers/express-multilang'); // default should be english
 
 const messages = {
@@ -16,14 +16,13 @@ const messages = {
     }
 };
 
-describe('', () => {
+describe('Lang', () => {
 
     it('should return `en` as default language', () => {
         let lang = new Lang();
         const expected = 'en';
-        console.log('lang.config: ', lang.config);
         const actual = lang.config.def;
-        expect(expected).toBe(actual);
+        assert.equal(actual, expected);
     });
 
     it('should return the correct key/value', () => {
@@ -32,8 +31,7 @@ describe('', () => {
         lang.config.messages = messages;
         const expected = 'Salut';
         const actual = lang.translate('hello')
-        expect(expected).toBe(actual);
-
+        assert.equal(actual, expected);
     });
 
     it('should return the key for undefined translations', () => {
@@ -42,6 +40,6 @@ describe('', () => {
         lang.config.messages = messages;
         const expected = 'this-key-does-not-exist';
         const actual = lang.translate('this-key-does-not-exist');
-        expect(expected).toBe(actual);
+        assert.equal(actual, expected);
     });
 });
