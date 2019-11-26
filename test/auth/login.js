@@ -5,14 +5,16 @@ const assert = require('assert');
 let User = require('../../models/User');
 
 describe('Login', function() {
-  // before(() => {
-  //     User.deleteMany({});
-  //     User.register(new User({ username: 'test'}), 'secret', (err, user) => {
-  //         if(err){
-  //             console.log('Error: ', err);
-  //         }
-  //     });
-  // });
+  before((done) => {
+      User.deleteMany({}).then(() => {
+        User.register(new User({ username: 'test'}), 'secret', (err, user) => {
+            if(err){
+                console.log('Error: ', err);
+            }
+            done();
+        });
+      });
+  });
 
   it('return the login page', (done) => {
       request(app).get('/login').expect(200).end((err, res) => {
