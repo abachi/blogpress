@@ -5,6 +5,13 @@ const assert  = require('assert');
 const Post    = require('../models/Post');
 
 describe('Post', function() {
+  
+  before((done) => {
+    Post.deleteMany({}).then(() => {
+      done();
+    });
+  });
+
   it('guest cannot create a post without login', (done) => {
     request(app)
     .post('/post/create')
@@ -20,11 +27,6 @@ describe('Post', function() {
     });
   });
   
-  before(() => {
-      const q = Post.deleteMany({});
-      q.exec();
-  });
-
   it('should post an article with authenticated user', done => {
       // make suer theres no articles
       let query = Post.find({});
