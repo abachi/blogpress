@@ -13,6 +13,8 @@ describe('Login', () => {
   });
 
   it('should redirect user to home when user successfull login', async () => {
+    await User.deleteMany({});
+    await User.register(new User({'username': 'test'}), 'secret');
     await agent
       .post('/login')
       .set('Content-Type', 'application/x-www-form-urlencoded')
@@ -48,6 +50,19 @@ describe('Login', () => {
     await agent.get('/post/create')
     .expect(302)
     .expect('Location', '/login')
+  });
+
+  it('should redirect to login page with error message when user fails login', async () => {
+    await User.deleteMany({});
+    await agent
+      .post('/login')
+      .set('Content-Type', 'application/x-www-form-urlencoded')
+      .send({
+        'username': 'not-exist',
+        'password': 'secret',
+      })
+      .expect(302)
+      .expect('Location', '/login')
   });
 
 });

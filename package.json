@@ -7,7 +7,7 @@
   "author": "Nasser Abachi",
   "scripts": {
     "start": "nodemon app.js",
-    "test": "NODE_ENV=testing nodemon --exec \"mocha -R min test/* --watch\""
+    "test": "NODE_ENV=testing nodemon --exec \"mocha test/* --watch\""
   },
   "license": "MIT",
   "dependencies": {

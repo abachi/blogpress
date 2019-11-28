@@ -129,6 +129,7 @@ app.post('/post/create', [authMiddleware, articleRules()], (req, res, next) => {
         title: req.body.title,
         text: req.body.text,
         created_at: (new Date()).toTimeString(),
+        updated_at: (new Date()).toTimeString(),
         user_id: req.user.id,
     }, (err, post) => {
         if(err) {
@@ -157,23 +158,31 @@ app.get('/post/edit/:id', (req, res) => {
     });
 });
 app.put('/post/edit/:id',[authMiddleware, articleRules()], (req, res) => {
-    
     // how we hide this ? DRY
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.redirect('back');
     }
 
-    Post.findByIdAndUpdate(req.params.id, req.body.data, (err, post) => {
+    Post.findOne({_id: req.params.id}, (err, post) => {
         if(err || !post){
             return res.render('404');
         }
-        res.redirect(`/post/show/${post.id}`);
+        if(post.user_id != req.user.id){
+            res.status(401);
+            return res.send('Unauthorized');
+        }
 
+        post.title = req.body.title;
+        post.text = req.body.text;
+        post.updated_at= (new Date()).toTimeString();
+
+        post.save().then(() => {
+            res.redirect(`/post/show/${post.id}`);
+        });
     });
 });
 app.delete('/post/delete/:id', authMiddleware, (req, res) => {
-    // make sure the current user is the owner
     Post.findOne({_id: req.params.id}, (err, post) => {
         if(err) return res.send({error: err});
         if(!post) return res.render('404');

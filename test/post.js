@@ -122,4 +122,101 @@ describe('Post CRUD', function() {
       assert.equal(count, 1);
   });
 
+  it('user should update his own post', async () => {
+    
+    await Post.deleteMany({});
+    await User.deleteMany({});
+
+    user = await User.register(new User({ 'username': 'test' }), 'secret');
+    // authenticate a user, is there a better way to create an authenticated user?
+    await agent.post('/login')
+    .set('Content-Type', 'application/x-www-form-urlencoded')
+    .send({
+      'username': 'test',
+      'password': 'secret'
+    })
+    .expect(302)
+    .expect('Location', '/');
+    let count = await Post.countDocuments({}); 
+    assert.equal(count, 0);
+
+    let post = new Post({
+      'title': 'The old title',
+      'text': 'The old text',
+      'user_id': user.id,
+    });
+    await post.save();
+    count = await Post.countDocuments({}); 
+    assert.equal(count, 1);
+    await agent
+    .set('Content-Type', 'application/x-www-form-urlencoded')
+    .put(`/post/edit/${post.id}`)
+    .send({
+      'title': 'A new title',
+      'text': 'The old text'
+    })
+    .expect(302)
+    .expect('Location', `/post/show/${post.id}`);
+    
+    const foundPost = await Post.findOne({_id: post.id});
+    assert.equal(foundPost.id, post.id);
+    assert.notEqual(foundPost.title, post.title);
+    assert.equal(foundPost.title, 'A new title');
+  });
+
+
+  it('should update only owner post', async () => {
+    let userOne;
+    let userTwo;
+    const agentOne = request.agent(app);
+    const agentTwo = request.agent(app);
+    await User.deleteMany({});
+    await Post.deleteMany({});
+
+    userOne = await User.register(new User({'username': 'userOne'}), 'secret');
+    userTwo = await User.register(new User({'username': 'userTwo'}), 'secret');
+    let postByUserOne = new Post({
+      'title': 'A dummy title',
+      'text': 'A dummy text',
+      'user_id': userOne.id,
+    });
+      
+    await postByUserOne.save();
+    await agentOne
+      .post('/login')
+      .set('Content-Type', 'application/x-www-form-urlencoded')
+      .send({
+      'username': 'userOne',
+      'password': 'secret'
+    })
+    .expect(302)
+    .expect('Location', '/');
+
+    await agentTwo
+    .post('/login')
+    .set('Content-Type', 'application/x-www-form-urlencoded')
+    .send({
+      'username': 'userTwo',
+      'password': 'secret'
+    })
+    .expect(302)
+    .expect('Location', '/');
+
+    await agentTwo
+    .set('Content-Type', 'application/x-www-form-urlencoded')
+    .put(`/post/edit/${postByUserOne.id}`)
+    .send({
+      'title': 'A new title',
+      'text': 'A new text'
+    })
+    .expect(401);
+
+    const foundPost = await Post.findOne({_id: postByUserOne.id});
+    assert.equal(foundPost.id, postByUserOne.id);
+    assert.equal(foundPost.title, postByUserOne.title);
+    assert.equal(foundPost.title, 'A dummy title');
+    assert.equal(foundPost.text, 'A dummy text');
+
+  });
+
 });
