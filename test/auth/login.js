@@ -4,28 +4,16 @@ const agent = request.agent(app);
 const assert = require('assert');
 let User = require('../../models/User');
 
-describe('Login', function() {
-  before((done) => {
-      User.deleteMany({}).then(() => {
-        User.register(new User({ username: 'test'}), 'secret', (err, user) => {
-            if(err){
-                console.log('Error: ', err);
-            }
-            done();
-        });
-      });
+describe('Login', () => {
+
+  it('return the login page', async () => {
+    await request(app)
+      .get('/login')
+      .expect(200);
   });
 
-  it('return the login page', (done) => {
-      request(app).get('/login').expect(200).end((err, res) => {
-        if(err) return done(err);
-        return done();
-      });
-  });
-
-
-  it('should redirect user to home when user successfull login', (done) => {
-    agent
+  it('should redirect user to home when user successfull login', async () => {
+    await agent
       .post('/login')
       .set('Content-Type', 'application/x-www-form-urlencoded')
       .send({
@@ -33,17 +21,13 @@ describe('Login', function() {
         password: 'secret'
       })
       .expect(302)
-      .expect('Location', '/')
-      .end((err, res) => {
-          if(err) return done(err);
-
-          return done();
-      });
+      .expect('Location', '/');
   });
 
-  it('should redirect to home page when user is logout', done => {
-
-    agent
+  it('should redirect to home page when user is logout', async () => {
+    await User.deleteMany({});
+    await User.register(new User({'username': 'test'}), 'secret');
+    await agent
     .post('/login')
     .set('Content-Type', 'application/x-www-form-urlencoded')
     .send({
@@ -51,32 +35,19 @@ describe('Login', function() {
       password: 'secret'
     })
     .expect(302)
-    .expect('Location', '/')
-    .end((err, res) => {
-        if(err) return done(err);
-    });
-    agent.get('/post/create')
-    .expect(200)
-    .end((err, res) => {
-        if(err) return done(err);   
-    });
-    agent
-      .get('/logout')
-      .expect(302)
-      .expect('Location', '/')
-      .end((err, res) => {
-        // we wait till the logout finish and we
-        // make sure there is no session
-        if(err) return done(err);   
-        agent.get('/post/create')
-        .expect(302)
-        .expect('Location', '/login')
-        .end((err, res) => {
-          if(err) return done(err); 
-          return done();
-        });
-      });
+    .expect('Location', '/');
 
+    await agent.get('/post/create')
+    .expect(200);
+    
+    await agent
+    .get('/logout')
+    .expect(302)
+    .expect('Location', '/');
+    
+    await agent.get('/post/create')
+    .expect(302)
+    .expect('Location', '/login')
   });
 
 });

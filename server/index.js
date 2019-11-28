@@ -135,7 +135,6 @@ app.post('/post/create', [authMiddleware, articleRules()], (req, res, next) => {
             console.log('Error: ', err);
             return res.send({error: err});
         }
-        console.log('Post created.');
         res.redirect('/');
     }); 
 });
@@ -174,12 +173,18 @@ app.put('/post/edit/:id',[authMiddleware, articleRules()], (req, res) => {
     });
 });
 app.delete('/post/delete/:id', authMiddleware, (req, res) => {
-    Post.findByIdAndRemove(req.params.id, (err, post) => {
-        if(err){
-            return res.render('404');
-        }
+    // make sure the current user is the owner
+    Post.findOne({_id: req.params.id}, (err, post) => {
+        if(err) return res.send({error: err});
+        if(!post) return res.render('404');
         
-        res.redirect('/');
+        if(post.user_id != req.user.id){
+            res.status(401);
+            return res.send('Unauthorized');
+        }
+
+        post.remove();
+        return res.redirect('/');
     });
 });
 
