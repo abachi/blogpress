@@ -7,9 +7,9 @@ const User    = require('../models/User');
 
 
 describe('Post CRUD', function() {
-  
+
   it('guest cannot create a post without login', async () => {
-    await request(app)
+    await agent
     .post('/post/create')
     .send({
         'title': 'A Post Title Example',

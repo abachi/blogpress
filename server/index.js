@@ -14,6 +14,7 @@ lang.config.def = 'fr';
 lang.config.messages = require('../lang/messages');
 
 const { check, body, validationResult } = require('express-validator');
+
 let passport = require('passport');
 let localStrategy = require('passport-local');
 let passportLocalMongoose = require('passport-local-mongoose');
@@ -21,22 +22,17 @@ let methodOverride = require('method-override');
 let bodyParser = require('body-parser');
 let User = require('../models/User');
 let Post = require('../models/Post');
-// let DBSeeder = require('../seeds/DBSeeder');
-
 // middlewares 
-const alreadyAuthenticated = (req, res, next) => {
-    if(req.isAuthenticated()){
-        console.log('The user already authenticated');
-        return res.redirect('/');
-    }
-    next();
-};
-const authMiddleware = (req, res, next) => {
-    if(req.isAuthenticated()){
-        return next();
-    }
-    res.redirect('/login');
-};
+const alreadyAuthenticated = require('../middlewares/alreadyAuthenticated');
+const authMiddleware = require('../middlewares/authMiddleware');
+const articleRules = require('../middlewares/articleRules');
+// controllers
+const HomeController = require('../controllers/HomeController');
+const AuthController = require('../controllers/AuthController');
+const ArticleController = require('../controllers/ArticleController');
+const LangController = require('../controllers/LangController');
+
+
 // initialization & configuration
 passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
@@ -70,139 +66,25 @@ mongoose.connect(dbUrl, {
 });
 
 // Routes
-app.get('/', (req, res) => {
-    // get posts limit by 10
-    Post.find({}, (err, posts) => {
-        if(err) console.log('Error: ', err);
-        res.render('home', {posts: posts});
-    });
-});
+app.get('/', HomeController.index);
 
 // auth routes
-app.get('/register', alreadyAuthenticated, (req, res) => {
-    res.render('auth/register');
-});
-app.get('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/');
-});
-
-app.post('/register', (req, res) => {
-    User.register(new User({ username: req.body.username }), req.body.password, (err, user) => {
-        if(err){
-            console.log('Error: ', err);
-            return res.render('auth/register', { errors: err });
-        }
-        passport.authenticate('local')(req, res, () => res.redirect('/'));
-    });
-});
-app.get('/login', alreadyAuthenticated, (req, res) => {
-    res.render('auth/login');
-});
+app.get('/register', alreadyAuthenticated, AuthController.getRegisterForm);
+app.get('/logout', AuthController.logout);
+app.post('/register', AuthController.register);
+app.get('/login', alreadyAuthenticated, AuthController.getLoginForm);
 app.post('/login', passport.authenticate("local", {
-        successRedirect: '/',
-        failureRedirect: '/login',
-    }));
+    successRedirect: '/',
+    failureRedirect: '/login',
+}));
 
 // post routes
-app.get('/post/create', authMiddleware, (req, res) => {
-    res.render('post/create');
-});
- 
-const articleRules = (req, res, next) => {
-    return [
-        check('title', lang.translate('invalid-title-messag')).isLength({ min: 4 }),
-        check('text', 'Text should be at least 10 chars.').isLength({ min: 10 }),
-    ];
-};
-
-
-app.post('/post/create', [authMiddleware, articleRules()], (req, res, next) => {
-    
-    // how we hide this DRY
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.render('post/create', { errors: errors.array() });
-    }
-    
-    Post.create({
-        title: req.body.title,
-        text: req.body.text,
-        created_at: (new Date()).toTimeString(),
-        updated_at: (new Date()).toTimeString(),
-        user_id: req.user.id,
-    }, (err, post) => {
-        if(err) {
-            console.log('Error: ', err);
-            return res.send({error: err});
-        }
-        res.redirect('/');
-    }); 
-});
-
-app.get('/post/show/:id', (req, res) => {
-    Post.findById(req.params.id, (err, post) => {
-        if(err || !post){
-            return res.render('404');
-        }
-
-        res.render('post/show', { post: post });
-    });
-});
-app.get('/post/edit/:id', (req, res) => {
-    Post.findById(req.params.id, (err, post) => {
-        if(err || !post){
-            return res.render('404');
-        }
-        res.render('post/edit', { post: post });
-    });
-});
-app.put('/post/edit/:id',[authMiddleware, articleRules()], (req, res) => {
-    // how we hide this ? DRY
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.redirect('back');
-    }
-
-    Post.findOne({_id: req.params.id}, (err, post) => {
-        if(err || !post){
-            return res.render('404');
-        }
-        if(post.user_id != req.user.id){
-            res.status(401);
-            return res.send('Unauthorized');
-        }
-
-        post.title = req.body.title;
-        post.text = req.body.text;
-        post.updated_at= (new Date()).toTimeString();
-
-        post.save().then(() => {
-            res.redirect(`/post/show/${post.id}`);
-        });
-    });
-});
-app.delete('/post/delete/:id', authMiddleware, (req, res) => {
-    Post.findOne({_id: req.params.id}, (err, post) => {
-        if(err) return res.send({error: err});
-        if(!post) return res.render('404');
-        
-        if(post.user_id != req.user.id){
-            res.status(401);
-            return res.send('Unauthorized');
-        }
-
-        post.remove();
-        return res.redirect('/');
-    });
-});
-
-
-app.post('/lang', (req, res, next) => {
-    if(req.body.lang){
-        lang.config.def = req.body.lang;
-    }
-    res.redirect('back');
-});
+app.get('/post/create', authMiddleware, ArticleController.create);
+app.post('/post/create', [authMiddleware, articleRules()], ArticleController.store);
+app.get('/post/show/:id', ArticleController.show);
+app.get('/post/edit/:id', ArticleController.edit);
+app.put('/post/edit/:id',[authMiddleware, articleRules()], ArticleController.update);
+app.delete('/post/delete/:id', authMiddleware, ArticleController.destroy);
+app.post('/lang', LangController.update);
 
 module.exports = app;

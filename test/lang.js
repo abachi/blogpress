@@ -1,5 +1,8 @@
-const assert = require('assert');
-let Lang = require('../helpers/express-multilang'); // default should be english
+const request = require('supertest');
+const app     = require('../server');
+const agent   = request.agent(app);
+const assert  = require('assert');
+let Lang      = require('../helpers/express-multilang'); // default should be english
 
 const messages = {
     'en':{
@@ -41,5 +44,14 @@ describe('Lang', () => {
         const expected = 'this-key-does-not-exist';
         const actual = lang.translate('this-key-does-not-exist');
         assert.equal(actual, expected);
+    });
+
+    it('should change the language successfully', async () => {
+        let lang = new Lang();
+        await agent
+        .post('/lang')
+        .send({'lang': 'ar'})
+        .expect(302)
+        .expect('Location', '/');
     });
 });
