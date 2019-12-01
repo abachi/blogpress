@@ -1,0 +1,20 @@
+{
+	"home": "Home",
+	"login": "Login",
+	"logout": "Logout",
+	"new-post": "New Post",
+	"update": "Update",
+	"publish": "Publish",
+	"register": "Register",
+	"username": "Username",
+	"password": "Password",
+	"edit-post": "Edit Post",
+	"title": "Title",
+	"text": "Text",
+	"edit": "Edit",
+	"read": "Read",
+	"delete": "Delete",
+	"published_at": "Published At",
+	"invalid-title-message": "Invalid title, minimum 4 chars.",
+	"set": "set"
+}

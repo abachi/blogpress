@@ -1,17 +1,24 @@
 // reuirements
 const express = require('express');
 let mongoose = require('mongoose');
+const path = require('path');
+let cookieParser = require('cookie-parser');
+
+let i18n = require('i18n');
+i18n.configure({
+  locales: ['ar', 'fr', 'en'],
+  directory: path.join(__dirname, '../locales'),
+  defaultLocale: 'ar',
+  cookie: 'blogpress',
+  api:{
+      '__': 'lang',
+    }
+});
 const expressSession = require('express-session')({ 
-    secret: 'random key',
+    secret: 'blogpress',
     resave: false,
     saveUninitialized: false
 });
-
-// refactor to better implimentation
-const Lang = require('../helpers/express-multilang');
-let lang = new Lang();
-lang.config.def = 'fr';
-lang.config.messages = require('../lang/messages');
 
 const { check, body, validationResult } = require('express-validator');
 
@@ -32,7 +39,6 @@ const AuthController = require('../controllers/AuthController');
 const ArticleController = require('../controllers/ArticleController');
 const LangController = require('../controllers/LangController');
 
-
 // initialization & configuration
 passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
@@ -42,20 +48,21 @@ const app = express();
 app.use(methodOverride('_method'));
 app.set('view engine', 'ejs');
 app.use(expressSession);
+app.use(cookieParser("blogpress"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
-
+app.use(i18n.init);
 app.use((req, res, next) => {
+    if(req.cookies.i18n){
+        res.setLocale(req.cookies.i18n);
+    }
     res.locals.currentUser = req.user;
     if(res.locals.errors === undefined)
         res.locals.errors = [];
     next();
 });
 
-app.locals.lang = (key) => {
-    return lang.translate(key);    
-};
 // database config 
 const dbUrl = (process.env.NODE_ENV === 'testing') ? 'mongodb://localhost/testing-blogex' : 'mongodb://localhost/blogex';
 mongoose.connect(dbUrl, {

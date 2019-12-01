@@ -3,11 +3,8 @@ let LangController = {};
 
 
 LangController.update = (req, res, next) => {
-    if(req.body.lang){
-        let lang = new Lang();
-        lang.config.def = req.body.lang;
-    }
-    res.redirect('back');
+    res.cookie('i18n', req.body.lang); 
+    return res.redirect('back');
 };
 
 

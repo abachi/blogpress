@@ -1,0 +1,20 @@
+{
+	"home": "الرئيسية",
+	"login": "دخول",
+	"logout": "خروج",
+	"new-post": "مقال جديد",
+	"update": "تحديث",
+	"publish": "نشر",
+	"register": "تسجيل",
+	"username": "اسم المستخدم",
+	"password": "كلمة المرور",
+	"edit-post": "تحديث المقال",
+	"title": "عنوان",
+	"text": "نص",
+	"edit": "تعديل",
+	"read": "قراءة",
+	"delete": "حذف",
+	"published_at": "نشر في",
+	"invalid-title-message": "العنوان غير سليم، مطلوب 4 أحرف على الاقل",
+	"set": "set"
+}

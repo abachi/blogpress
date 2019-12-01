@@ -1,0 +1,20 @@
+{
+	"home": "Accueil",
+	"login": "Connecter",
+	"logout": "Déconnecter",
+	"new-post": "Nouveau Article",
+	"update": "Modifier",
+	"publish": "Publier",
+	"register": "Enregistrer",
+	"username": "Nom d\"utilisateur",
+	"password": "Mot de passe",
+	"edit-post": "Modifier Article",
+	"title": "Titre",
+	"text": "Texte",
+	"edit": "Modifier",
+	"read": "Lire",
+	"delete": "Supprimer",
+	"published_at": "Publier le",
+	"invalid-title-message": "Le titre est invalide, 4 minimum lettres.",
+	"set": "set"
+}
