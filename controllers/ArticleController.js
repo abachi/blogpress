@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 
 let Post = require('../models/Post');
+let Comment = require('../models/Comment');
 
 let ArticleController = {};
 
@@ -68,12 +69,13 @@ ArticleController.update = (req, res) => {
 };
 
 ArticleController.show = (req, res) => {
-    Post.findById(req.params.id, (err, post) => {
+
+    Post.findById(req.params.id, async (err, post) => {
         if(err || !post){
             return res.render('404');
         }
-
-        res.render('post/show', { post: post });
+        let comments = await Comment.find({post_id: post.id});
+        res.render('post/show', { post: post, comments: comments });
     });
 };
 
